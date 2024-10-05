@@ -10,8 +10,30 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 #TODO func to analyze how much more info a user wants for a note 
+'''
+#new info -> best pitch of routes to take for info -> compare with current pages -> 
+either:
+ - add info to existing page 
+ - create parent or child for existing page 
+ - create new page 
+-> add to knowledge base
 
+#paths for info RAG: 
+ - simple note-taking : format user's saved info nicely
+ - research assistant : use internet and knowledge base to generate report and possible new paths
+ - project planning   : use knowledge base to organize, plan
+
+#features:
+user chooses how many pages to automatically generate from their note
+user selects which knowledge base(s) to use for generating new pages 
+
+#crews: 
+knowledge base crew: organizes knowledge bases, suggests, and creates new ones (ie combining directories of pages) 
+assimilation crew: decides how to incorporate info into a KB
+creation crew: researches and generates pages
+'''
 class Delta:
+
     def __init__(self):
         self.knowledge_base = {}  # This will be replaced with a proper database or knowledge graph later
 
