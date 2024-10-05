@@ -45,7 +45,11 @@ BrainButler is an AI-powered knowledge management system that helps users organi
 
 ### Chrome Extension
 
-*(Details to be added)*
+- Note categorisation
+- User notetaking with AI prompt generation
+- Save note
+- Redirect user to web app to view existing notes
+- Pinata API Key-Secret/JWT Token authentication
 
 ### Web App
 
