@@ -1,37 +1,42 @@
+/* General Styles */
 body {
   font-family: Arial, sans-serif;
   width: 300px;
   padding: 10px;
+  background-image: url('images/background-image.jpeg');
+  background-size: cover;
+  background-position: center;
+  color: #fff; /* Set text color to contrast with background */
+  border-radius: 10px; /* Rounded corners for the body content */
+  overflow: hidden; /* Ensure content doesn't overflow rounded corners */
 }
 
 h1 {
   text-align: center;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000; /* Optional: add a subtle text shadow for readability */
 }
 
 label {
   display: block;
   margin-top: 10px;
+  color: #fff;
 }
 
-input[type="text"] {
+input[type="text"], #noteArea, #categorySelect {
   width: 100%;
   padding: 5px;
   margin-bottom: 10px;
   box-sizing: border-box;
-}
-
-#categorySelect {
-  width: 100%;
-  padding: 5px;
-  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  border: none;
+  border-radius: 10px; /* Rounded corners */
+  color: #000; /* Text color */
 }
 
 #noteArea {
-  width: 100%;
   height: 150px;
   margin-top: 10px;
-  padding: 5px;
-  box-sizing: border-box;
 }
 
 .buttons {
@@ -46,6 +51,15 @@ button {
   cursor: pointer;
   width: 45%;
   margin-top: 5px;
+  background-color: #fff; /* White background for buttons */
+  border: none;
+  border-radius: 10px; /* Rounded corners */
+  color: #000; /* Black text */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Optional: add a subtle shadow */
+}
+
+button:hover {
+  background-color: #f0f0f0; /* Slightly darker white on hover */
 }
 
 #viewJournals, #openSettings {
@@ -54,9 +68,11 @@ button {
 }
 
 .journal-entry {
-  border: 1px solid #ccc;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  border-radius: 10px; /* Rounded corners */
   padding: 10px;
   margin-bottom: 10px;
+  color: #000;
 }
 
 .journal-entry h3 {
@@ -65,4 +81,57 @@ button {
 
 .journal-entry button {
   margin-top: 5px;
+  background-color: #fff; /* White background */
+  border: none;
+  border-radius: 10px; /* Rounded corners */
+  color: #000; /* Black text */
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.journal-entry button:hover {
+  background-color: #f0f0f0;
+}
+
+/* Additional Styles for Better Aesthetics */
+
+/* Adjust the select dropdown */
+#categorySelect {
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%205%22><polygon%20points%3D%220%2C0%204%2C0%202%2C5%22%20fill%3D%22%23000%22/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 10px;
+  appearance: none; /* Remove default arrow */
+}
+
+input[type="text"]:focus, #noteArea:focus, #categorySelect:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Black glow on focus */
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Adjustments for the Settings Page */
+#apiKeySection, #jwtSection {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 10px; /* Rounded corners */
+  margin-bottom: 10px;
+}
+
+#saveKeys {
+  width: 100%;
+  background-color: #fff; /* White background */
+  border: none;
+  border-radius: 10px; /* Rounded corners */
+  color: #000; /* Black text */
+  padding: 10px;
+  cursor: pointer;
+}
+
+#saveKeys:hover {
+  background-color: #f0f0f0;
 }
