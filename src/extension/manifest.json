@@ -1,23 +1,23 @@
 {
-    "manifest_version": 3,
-    "name": "AI Notetaking Extension",
-    "version": "1.0",
-    "description": "Take notes and get AI-generated prompts.",
-    "action": {
-      "default_popup": "popup.html"
-    },
-    "permissions": [
-      "storage",
-      "identity"
-    ],
-    "host_permissions": [
-      "http://localhost:3000/*",
-      "https://accounts.google.com/*",
-      "https://www.googleapis.com/*"
-    ],
-    "content_security_policy": {
-      "extension_pages": "script-src 'self'; object-src 'self'"
-    }
+  "manifest_version": 3,
+  "name": "AI Notetaking Extension",
+  "version": "1.0",
+  "description": "Take notes, categorize them, and get AI-generated prompts.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://accounts.google.com/*",
+    "https://www.googleapis.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
-  
+}
+
   
