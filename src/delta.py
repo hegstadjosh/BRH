@@ -1,13 +1,16 @@
 import os
 from typing import Dict, List, Any
 import openai
-from dotenv import load_dotenv
+from crewai import Agent, Task, Crew, Process
+from crewai_tools import SerperDevTool, WebsiteSearchTool
 
-# Load environment variables
-load_dotenv()
+# Set up API keys
+os.environ["SERPER_API_KEY"] = "Your_Serper_API_Key"
+os.environ["OPENAI_API_KEY"] = "Your_OpenAI_API_Key"
 
-# Initialize OpenAI client
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize tools
+search_tool = SerperDevTool()
+web_search_tool = WebsiteSearchTool()
 
 # Example knowledge base json structure
 knowledge_base_example = {
@@ -67,90 +70,95 @@ page_example = {
     ]
 }
 
-class Delta:
+# Create agents
+knowledge_base_agent = Agent(
+    role="Knowledge Base Organizer",
+    goal="Organize and manage knowledge bases",
+    backstory="An expert in information architecture with a keen eye for organizing complex data structures.",
+    tools=[search_tool, web_search_tool],
+    verbose=True
+)
 
-    def __init__(self):
-        self.knowledge_base = {}  # This will be replaced with a proper database or knowledge graph later
+assimilation_agent = Agent(
+    role="Information Assimilator",
+    goal="Decide how to incorporate new information into existing knowledge bases",
+    backstory="A skilled analyst with expertise in content curation and information synthesis.",
+    tools=[search_tool, web_search_tool],
+    verbose=True
+)
 
-    def process_input(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Process incoming data from the Chrome extension or other sources.
-        """
-        # Extract relevant information from input_data
-        content = input_data.get("content", "")
-        url = input_data.get("url", "")
-        
-        # Categorize the input
-        category = self.categorize(content)
-        
-        # Augment the information
-        augmented_data = self.augment_information(content)
-        
-        # Store the processed information
-        processed_data = {
-            "original_content": content,
-            "url": url,
-            "category": category,
-            "augmented_data": augmented_data
-        }
-        self.store_information(processed_data)
-        
-        return processed_data
+creation_agent = Agent(
+    role="Content Creator",
+    goal="Research and generate comprehensive pages for knowledge bases",
+    backstory="A creative writer and researcher with a talent for producing engaging and informative content.",
+    tools=[search_tool, web_search_tool],
+    verbose=True
+)
 
-    def categorize(self, content: str) -> str:
-        """
-        Use LLM to categorize the input content.
-        """
-        prompt = f"Categorize the following content into a single word or short phrase:\n\n{content}\n\nCategory:"
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content.strip()
+# Define tasks
+organize_kb_task = Task(
+    description="Analyze the current knowledge base structure and suggest improvements or new knowledge bases.",
+    expected_output="A detailed report on the current knowledge base structure with suggestions for optimization.",
+    agent=knowledge_base_agent
+)
 
-    def augment_information(self, content: str) -> str:
-        """
-        Use LLM to augment the input content with additional information.
-        """
-        prompt = f"Provide additional relevant information for the following content:\n\n{content}\n\nAdditional information:"
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content.strip()
+assimilate_info_task = Task(
+    description="Review new information and determine the best way to incorporate it into the existing knowledge base.",
+    expected_output="A plan for integrating new information, including whether to add to existing pages, create new pages, or establish new relationships.",
+    agent=assimilation_agent
+)
 
-    def store_information(self, processed_data: Dict[str, Any]):
-        """
-        Store the processed information in the knowledge base.
-        This is a placeholder and should be replaced with proper database operations.
-        """
-        # Generate a simple key for demonstration purposes
-        key = f"entry_{len(self.knowledge_base) + 1}"
-        self.knowledge_base[key] = processed_data
+create_content_task = Task(
+    description="Research and generate a new page for the knowledge base based on the assimilation plan.",
+    expected_output="A fully formatted page with content, including relevant links to other pages or resources.",
+    agent=creation_agent
+)
 
-    def query_knowledge_base(self, query: str) -> List[Dict[str, Any]]:
-        """
-        Query the knowledge base for relevant information.
-        This is a simple implementation and should be enhanced with proper search algorithms.
-        """
-        results = []
-        for entry in self.knowledge_base.values():
-            if query.lower() in entry["original_content"].lower() or query.lower() in entry["augmented_data"].lower():
-                results.append(entry)
-        return results
+# Create crews
+knowledge_base_crew = Crew(
+    agents=[knowledge_base_agent],
+    tasks=[organize_kb_task],
+    process=Process.sequential,
+    verbose=True
+)
+
+assimilation_crew = Crew(
+    agents=[assimilation_agent],
+    tasks=[assimilate_info_task],
+    process=Process.sequential,
+    verbose=True
+)
+
+creation_crew = Crew(
+    agents=[creation_agent],
+    tasks=[create_content_task],
+    process=Process.sequential,
+    verbose=True
+)
+
+# Function to process new information
+def process_new_information(new_info, knowledge_base):
+    # Step 1: Analyze knowledge base structure
+    kb_analysis = knowledge_base_crew.kickoff()
+    
+    # Step 2: Determine how to incorporate new information
+    assimilation_plan = assimilation_crew.kickoff(inputs={"new_info": new_info, "kb_analysis": kb_analysis})
+    
+    # Step 3: Create new content based on the assimilation plan
+    new_content = creation_crew.kickoff(inputs={"assimilation_plan": assimilation_plan})
+    
+    return new_content
 
 # Example usage
 if __name__ == "__main__":
-    delta = Delta()
-    
-    # Process some input
-    input_data = {
-        "content": "The Python programming language was created by Guido van Rossum.",
-        "url": "https://example.com/python-history"
+    new_info = "Recent advancements in quantum computing and their potential impact on cryptography."
+    knowledge_base = {
+        "title": "Technology Trends",
+        "pages": [
+            {"title": "Quantum Computing Basics", "content": "..."},
+            {"title": "Modern Cryptography", "content": "..."}
+        ]
     }
-    processed = delta.process_input(input_data)
-    print("Processed data:", processed)
     
-    # Query the knowledge base
-    query_results = delta.query_knowledge_base("Python")
-    print("Query results:", query_results)
+    updated_content = process_new_information(new_info, knowledge_base)
+    print("New content generated:", updated_content)
