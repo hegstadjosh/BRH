@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -28,7 +29,7 @@ app.get('/get-prompt', async (req, res) => {
     const prompt = response.data.choices[0].text.trim();
     res.json({ prompt });
   } catch (error) {
-    console.error('Error generating AI prompt:', error.response.data);
+    console.error('Error generating AI prompt:', error.response ? error.response.data : error);
     res.status(500).send('Error generating prompt');
   }
 });

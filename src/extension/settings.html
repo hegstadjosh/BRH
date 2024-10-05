@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Settings</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Settings</h1>
+  <label for="authMethod">Authentication Method:</label>
+  <select id="authMethod">
+    <option value="apiKey">API Key and Secret</option>
+    <option value="jwt">JWT Token</option>
+  </select>
+
+  <!-- API Key and Secret Inputs -->
+  <div id="apiKeySection">
+    <label for="apiKey">Pinata API Key:</label>
+    <input type="text" id="apiKey">
+    <label for="apiSecret">Pinata Secret API Key:</label>
+    <input type="text" id="apiSecret">
+  </div>
+
+  <!-- JWT Input -->
+  <div id="jwtSection" style="display: none;">
+    <label for="jwtToken">Pinata JWT Token:</label>
+    <input type="text" id="jwtToken">
+  </div>
+
+  <button id="saveKeys">Save</button>
+  <script src="settings.js"></script>
+</body>
+</html>
