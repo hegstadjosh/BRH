@@ -6,11 +6,24 @@
 </head>
 <body>
   <h1>Notetaking</h1>
+
+  <!-- Category Selection -->
+  <label for="categorySelect">Category:</label>
+  <select id="categorySelect">
+    <option value="Personal">Personal</option>
+    <option value="Work">Work</option>
+    <option value="Ideas">Ideas</option>
+    <option value="Other">Other</option>
+  </select>
+
+  <!-- Note Textarea -->
   <textarea id="noteArea" placeholder="Type your note here..."></textarea>
+
   <div class="buttons">
     <button id="saveNote">Save Note</button>
     <button id="getPrompt">Get AI Prompt</button>
   </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
