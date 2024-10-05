@@ -3,10 +3,17 @@ from typing import Dict, List, Any
 import openai
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import SerperDevTool, WebsiteSearchTool
+from dotenv import load_dotenv
+
+# Load environment variables from .env file with the contents: 
+# SERPER_API_KEY=your_serper_api_key
+# OPENAI_API_KEY=your_openai_api_key
+load_dotenv()
 
 # Set up API keys
-os.environ["SERPER_API_KEY"] = "Your_Serper_API_Key"
-os.environ["OPENAI_API_KEY"] = "Your_OpenAI_API_Key"
+serper_api_key = os.getenv("SERPER_API_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
 
 # Initialize tools
 search_tool = SerperDevTool()
