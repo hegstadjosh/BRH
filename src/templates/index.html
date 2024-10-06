@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .note { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+        form { margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 5px; margin-bottom: 10px; }
+        button { padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <h1>Notes Manager</h1>
+    
+    <form action="{{ url_for('add_note') }}" method="post">
+        <input type="text" name="title" placeholder="Title" required>
+        <textarea name="content" placeholder="Note content" required></textarea>
+        <input type="text" name="category" placeholder="Category">
+        <button type="submit">Add Note</button>
+    </form>
+
+    <h2>Your Notes</h2>
+    {% for note in notes %}
+        <div class="note" data-note-id="{{ note['id'] }}">
+            <h3>{{ note['title'] }}</h3>
+            <p>{{ note['content'] }}</p>
+            <p><strong>Category:</strong> {{ note['category'] }}</p>
+            <p><strong>Date:</strong> {{ note['date'] }}</p>
+            <form action="{{ url_for('delete_note', id=note['id']) }}" method="post" style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
+            <button class="edit-button">Edit</button>
+        </div>
+    {% endfor %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editButtons = document.querySelectorAll('.edit-button');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const noteId = this.closest('.note').dataset.noteId;
+                    editNote(noteId);
+                });
+            });
+        });
+
+        function editNote(id) {
+            fetch(`/get_note/${id}`)
+                .then(response => response.json())
+                .then(note => {
+                    document.querySelector('input[name="title"]').value = note.title;
+                    document.querySelector('textarea[name="content"]').value = note.content;
+                    document.querySelector('input[name="category"]').value = note.category;
+                    // You might want to add a hidden input for the note id and change the form action for editing
+                });
+        }
+    </script>
+</body>
+</html>

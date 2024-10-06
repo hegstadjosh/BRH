@@ -1,5 +1,5 @@
 document.getElementById('saveNote').addEventListener('click', saveNote);
-document.getElementById('getPrompt').addEventListener('click', getAIPrompt);
+document.getElementById('getResponse').addEventListener('click', getAIResponse);
 document.getElementById('viewJournals').addEventListener('click', viewJournals);
 
 function saveNote() {
@@ -30,8 +30,41 @@ function saveNote() {
     });
 }
 
-function getAIPrompt() {
-  // This function remains unchanged
+// function getAIPrompt() {
+//   fetch('http://localhost:5000/get-prompt')
+//     .then(response => response.json())
+//     .then(data => {
+//       document.getElementById('noteArea').value = data.prompt;
+//     })
+//     .catch(error => {
+//       console.error('Error fetching AI prompt:', error);
+//       alert('Failed to get AI prompt.');
+//     });
+// }
+
+function getAIResponse() {
+  const noteContent = document.getElementById('noteArea').value;
+  
+  if (!noteContent.trim()) {
+    alert('Please enter some content before requesting an AI response.');
+    return;
+  }
+
+  fetch('http://localhost:5000/get-response', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ note: noteContent }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById('noteArea').value += '\n\nAI Response:\n' + data.response;
+    })
+    .catch(error => {
+      console.error('Error fetching AI response:', error);
+      alert('Failed to get AI response.');
+    });
 }
 
 function viewJournals() {

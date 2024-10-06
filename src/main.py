@@ -3,12 +3,17 @@ import os
 from typing import Dict, List, Any
 from dotenv import load_dotenv
 from openai import OpenAI
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Initialize OpenAI client
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="")
 
 # Example knowledge base json structure
 knowledge_base_example = {
@@ -55,6 +60,17 @@ def set_openai_api_key(api_key):
 
 def create_agent_prompt(role, goal, backstory):
     return f"You are a {role}. Your goal is to {goal}. Backstory: {backstory}"
+
+def get_response(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "generate info from users' notes:"},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.choices[0].message.content
 
 def execute_task(agent_prompt, task_description, context=""):
     response = client.chat.completions.create(
@@ -194,19 +210,35 @@ def process_new_information(new_info, knowledge_base):
         "new_content": new_content
     }
 
+#flask server
+@app.route('/get-response', methods=['POST'])
+def api_get_response():
+    data = request.json
+    note_content = data.get('note', '')
+    print(note_content)
+    response = get_response(note_content)
+    return jsonify({'response': response})
+# def api_get_prompt():
+#     prompt = "Provide an engaging prompt to inspire note-taking:"
+#     response = get_response(prompt)
+#     return jsonify({'prompt': response})
+
+if __name__ == '__main__':
+    app.run(port=5000)
+
 # Example usage
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    new_info = ("Recent advancements in quantum computing and their potential impact on cryptography.")
+#     new_info = ("Recent advancements in quantum computing and their potential impact on cryptography.")
     
-    knowledge_base = {
-        "title": ("Technology Trends"),
-        "pages": [
-            {"title": ("Quantum Computing Basics"), "content": "..."},
-            {"title": ("Modern Cryptography"), "content": "..."}
-        ]
-    }
+#     knowledge_base = {
+#         "title": ("Technology Trends"),
+#         "pages": [
+#             {"title": ("Quantum Computing Basics"), "content": "..."},
+#             {"title": ("Modern Cryptography"), "content": "..."}
+#         ]
+#     }
     
-    updated_content = process_new_information(new_info, knowledge_base)
-    print("New content generated:", updated_content)
+#     updated_content = process_new_information(new_info, knowledge_base)
+#     print("New content generated:", updated_content)
 
