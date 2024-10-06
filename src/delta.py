@@ -4,6 +4,8 @@ import openai
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import SerperDevTool, WebsiteSearchTool
 from dotenv import load_dotenv
+from langchain.agents import load_tools
+
 
 # Load environment variables from .env file with the contents: 
 # SERPER_API_KEY=your_serper_api_key
@@ -12,12 +14,18 @@ load_dotenv()
 
 # Set up API keys
 serper_api_key = os.getenv("SERPER_API_KEY")
-openai_api_key = os.getenv("OPENAI_API_KEY")
-
+#openai_api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key="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"
 
 # Initialize tools
 search_tool = SerperDevTool()
 web_search_tool = WebsiteSearchTool()
+
+#vars 
+llm = "gpt-4o"
+fast_llm = "gpt-3.5-turbo"
+
+langchain_tools = load_tools(["google-serper"], llm = llm)
 
 # Example knowledge base json structure
 knowledge_base_example = {
@@ -83,7 +91,8 @@ knowledge_base_agent = Agent(
     goal="Organize and manage knowledge bases",
     backstory="An expert in information architecture with a keen eye for organizing complex data structures.",
     tools=[search_tool, web_search_tool],
-    verbose=True
+    verbose=True,
+    
 )
 
 assimilation_agent = Agent(
@@ -91,7 +100,8 @@ assimilation_agent = Agent(
     goal="Decide how to incorporate new information into existing knowledge bases",
     backstory="A skilled analyst with expertise in content curation and information synthesis.",
     tools=[search_tool, web_search_tool],
-    verbose=True
+    verbose=True,
+    
 )
 
 creation_agent = Agent(
@@ -99,7 +109,8 @@ creation_agent = Agent(
     goal="Research and generate comprehensive pages for knowledge bases",
     backstory="A creative writer and researcher with a talent for producing engaging and informative content.",
     tools=[search_tool, web_search_tool],
-    verbose=True
+    verbose=True,
+    
 )
 
 # Define tasks
@@ -169,3 +180,4 @@ if __name__ == "__main__":
     
     updated_content = process_new_information(new_info, knowledge_base)
     print("New content generated:", updated_content)
+
