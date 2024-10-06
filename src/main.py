@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Dict, List, Any
 from dotenv import load_dotenv
@@ -43,6 +44,11 @@ knowledge_base_example = {
     }
 }
 
+#knowledge base modification functions
+def add_page(knowledge_base: Dict[str, Any], page: Dict[str, Any]) -> Dict[str, Any]:
+    knowledge_base["pages"].append(page)
+    return knowledge_base
+
 # Function definitions
 def set_openai_api_key(api_key):
     client.api_key = api_key
@@ -80,17 +86,69 @@ def summarize_kb(knowledge_base):
     task = "Provide a summary of the current knowledge base."
     return execute_task(agent_prompt, task, str(knowledge_base))
 
+# def assimilation(new_info, kb_analysis):
+#     agent_prompt = create_agent_prompt(
+#         "Information Assimilator",
+#         "Decide how to incorporate new information into existing knowledge bases",
+#         "A skilled analyst with expertise in content curation and information synthesis."
+#     )
+#     task = ("Review new information and determine the best way to incorporate it into the existing knowledge base.")
+#     context = f"New Information: {new_info}\nKnowledge Base Analysis: {kb_analysis}"
+#     return execute_task(agent_prompt, task, context)
 
-
-def assimilation(new_info, kb_analysis):
+def assimilation(new_info, knowledge_base):
     agent_prompt = create_agent_prompt(
-        "Information Assimilator",
-        "Decide how to incorporate new information into existing knowledge bases",
-        "A skilled analyst with expertise in content curation and information synthesis."
+        "Information Assimilator and Summarizer",
+        "Analyze the knowledge base, summarize it, and decide how to incorporate new information",
+        "A skilled analyst with expertise in content curation, information synthesis, and knowledge base management."
     )
-    task = ("Review new information and determine the best way to incorporate it into the existing knowledge base.")
-    context = f"New Information: {new_info}\nKnowledge Base Analysis: {kb_analysis}"
-    return execute_task(agent_prompt, task, context)
+    
+    task = ("Analyze the given knowledge base, determine if there's a relevant page for the new information, "
+            "and decide how to incorporate it. If a relevant page exists, provide its details and suggestions "
+            "for augmentation. If not, provide a plan for creating a new page.")
+    
+    context = f"New Information: {new_info}\nKnowledge Base: {json.dumps(knowledge_base, indent=2)}"
+    
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": agent_prompt},
+            {"role": "user", "content": f"Task: {task}\nContext: {context}"}
+        ],
+        functions=[
+            {
+                "name": "process_knowledge_base",
+                "description": "Process the knowledge base and new information",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "summary": {
+                            "type": "string",
+                            "description": "A brief summary of the current knowledge base"
+                        },
+                        "relevant_page": {
+                            "type": "object",
+                            "properties": {
+                                "exists": {"type": "boolean"},
+                                "page_id": {"type": "string"},
+                                "title": {"type": "string"},
+                                "content": {"type": "string"}
+                            },
+                            "required": ["exists"]
+                        },
+                        "action_plan": {
+                            "type": "string",
+                            "description": "Plan for incorporating the new information"
+                        }
+                    },
+                    "required": ["summary", "relevant_page", "action_plan"]
+                }
+            }
+        ],
+        function_call={"name": "process_knowledge_base"}
+    )
+
+    return json.loads(response.choices[0].message.function_call.arguments)
 
 def creation(assimilation_plan):
     agent_prompt = create_agent_prompt(
@@ -101,17 +159,40 @@ def creation(assimilation_plan):
     task = ("Research and generate a new page for the knowledge base based on the assimilation plan.")
     return execute_task(agent_prompt, task, assimilation_plan)
 
+# def process_new_information(new_info, knowledge_base):
+#     # Step 1: Analyze knowledge base structure
+#     kb_summary = summarize_kb(knowledge_base)
+    
+#     # Step 2: Determine how to incorporate new information
+#     assimilation_plan = assimilation(new_info, kb_summary)
+    
+#     # Step 3: Create new content based on the assimilation plan
+#     new_content = creation(assimilation_plan)
+    
+#     return new_content
+
 def process_new_information(new_info, knowledge_base):
-    # Step 1: Analyze knowledge base structure
-    kb_summary = summarize_kb(knowledge_base)
+    # Step 1: Analyze knowledge base and determine how to incorporate new information
+    assimilation_result = assimilation(new_info, knowledge_base)
     
-    # Step 2: Determine how to incorporate new information
-    assimilation_plan = assimilation(new_info, kb_summary)
+    # Step 2: Create new content based on the assimilation result
+    if assimilation_result['relevant_page']['exists']:
+        creation_prompt = (f"Augment the existing page '{assimilation_result['relevant_page']['title']}' "
+                           f"with the following new information: {new_info}\n"
+                           f"Existing content: {assimilation_result['relevant_page']['content']}\n"
+                           f"Action plan: {assimilation_result['action_plan']}")
+    else:
+        creation_prompt = (f"Create a new page with the following information: {new_info}\n"
+                           f"Action plan: {assimilation_result['action_plan']}")
     
-    # Step 3: Create new content based on the assimilation plan
-    new_content = creation(assimilation_plan)
+    new_content = creation(creation_prompt)
     
-    return new_content
+    return {
+        "summary": assimilation_result['summary'],
+        "action_taken": "augmented" if assimilation_result['relevant_page']['exists'] else "created",
+        "page_id": assimilation_result['relevant_page'].get('page_id', "new"),
+        "new_content": new_content
+    }
 
 # Example usage
 if __name__ == "__main__":
