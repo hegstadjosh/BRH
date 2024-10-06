@@ -85,90 +85,68 @@ page_example = {
     ]
 }
 
-# Create agents
-knowledge_base_agent = Agent(
-    role="Knowledge Base Organizer",
-    goal="Organize and manage knowledge bases",
-    backstory="An expert in information architecture with a keen eye for organizing complex data structures.",
-    tools=[search_tool, web_search_tool],
-    verbose=True,
-    
-)
+import openai
 
-assimilation_agent = Agent(
-    role="Information Assimilator",
-    goal="Decide how to incorporate new information into existing knowledge bases",
-    backstory="A skilled analyst with expertise in content curation and information synthesis.",
-    tools=[search_tool, web_search_tool],
-    verbose=True,
-    
-)
+def set_openai_api_key(api_key):
+    openai.api_key = api_key
 
-creation_agent = Agent(
-    role="Content Creator",
-    goal="Research and generate comprehensive pages for knowledge bases",
-    backstory="A creative writer and researcher with a talent for producing engaging and informative content.",
-    tools=[search_tool, web_search_tool],
-    verbose=True,
-    
-)
+def create_agent_prompt(role, goal, backstory):
+    return f"You are a {role}. Your goal is to {goal}. Backstory: {backstory}"
 
-# Define tasks
-organize_kb_task = Task(
-    description="Analyze the current knowledge base structure and suggest improvements or new knowledge bases.",
-    expected_output="A detailed report on the current knowledge base structure with suggestions for optimization.",
-    agent=knowledge_base_agent
-)
+def execute_task(agent_prompt, task_description, context=""):
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": agent_prompt},
+            {"role": "user", "content": f"Task: {task_description}\nContext: {context}"}
+        ]
+    )
+    return response.choices[0].message['content']
 
-assimilate_info_task = Task(
-    description="Review new information and determine the best way to incorporate it into the existing knowledge base.",
-    expected_output="A plan for integrating new information, including whether to add to existing pages, create new pages, or establish new relationships.",
-    agent=assimilation_agent
-)
+def knowledge_base_crew(knowledge_base):
+    agent_prompt = create_agent_prompt(
+        "Knowledge Base Organizer",
+        "Organize and manage knowledge bases",
+        "An expert in information architecture with a keen eye for organizing complex data structures."
+    )
+    task = "Analyze the current knowledge base structure and suggest improvements or new knowledge bases."
+    return execute_task(agent_prompt, task, str(knowledge_base))
 
-create_content_task = Task(
-    description="Research and generate a new page for the knowledge base based on the assimilation plan.",
-    expected_output="A fully formatted page with content, including relevant links to other pages or resources.",
-    agent=creation_agent
-)
+def assimilation_crew(new_info, kb_analysis):
+    agent_prompt = create_agent_prompt(
+        "Information Assimilator",
+        "Decide how to incorporate new information into existing knowledge bases",
+        "A skilled analyst with expertise in content curation and information synthesis."
+    )
+    task = "Review new information and determine the best way to incorporate it into the existing knowledge base."
+    context = f"New Information: {new_info}\nKnowledge Base Analysis: {kb_analysis}"
+    return execute_task(agent_prompt, task, context)
 
-# Create crews
-knowledge_base_crew = Crew(
-    agents=[knowledge_base_agent],
-    tasks=[organize_kb_task],
-    process=Process.sequential,
-    verbose=True
-)
+def creation_crew(assimilation_plan):
+    agent_prompt = create_agent_prompt(
+        "Content Creator",
+        "Research and generate comprehensive pages for knowledge bases",
+        "A creative writer and researcher with a talent for producing engaging and informative content."
+    )
+    task = "Research and generate a new page for the knowledge base based on the assimilation plan."
+    return execute_task(agent_prompt, task, assimilation_plan)
 
-assimilation_crew = Crew(
-    agents=[assimilation_agent],
-    tasks=[assimilate_info_task],
-    process=Process.sequential,
-    verbose=True
-)
-
-creation_crew = Crew(
-    agents=[creation_agent],
-    tasks=[create_content_task],
-    process=Process.sequential,
-    verbose=True
-)
-
-# Function to process new information
 def process_new_information(new_info, knowledge_base):
     # Step 1: Analyze knowledge base structure
-    kb_analysis = knowledge_base_crew.kickoff()
+    kb_analysis = knowledge_base_crew(knowledge_base)
     
     # Step 2: Determine how to incorporate new information
-    assimilation_plan = assimilation_crew.kickoff(inputs={"new_info": new_info, "kb_analysis": kb_analysis})
+    assimilation_plan = assimilation_crew(new_info, kb_analysis)
     
     # Step 3: Create new content based on the assimilation plan
-    new_content = creation_crew.kickoff(inputs={"assimilation_plan": assimilation_plan})
+    new_content = creation_crew(assimilation_plan)
     
     return new_content
 
 # Example usage
 if __name__ == "__main__":
+    set_openai_api_key("your_openai_api_key_here")
+    
     new_info = "Recent advancements in quantum computing and their potential impact on cryptography."
     knowledge_base = {
         "title": "Technology Trends",
@@ -180,4 +158,3 @@ if __name__ == "__main__":
     
     updated_content = process_new_information(new_info, knowledge_base)
     print("New content generated:", updated_content)
-
