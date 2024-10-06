@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "AI Notetaking Extension with SQL Storage",
+  "version": "1.4",
+  "description": "Take notes, categorize them, and get AI-generated prompts. Now with SQL storage!",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "web_accessible_resources": [{
+    "resources": ["journals.html"],
+    "matches": ["<all_urls>"]
+  }]
+}
