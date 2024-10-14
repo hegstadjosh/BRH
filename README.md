@@ -5,7 +5,7 @@
 BrainButler is an AI-powered knowledge management system that helps users organize, research, and generate content. It currently features a Chrome extension for note-taking and a web app for note management, with plans for more advanced AI-driven features in the future.
 
 ## Current Features
-
+*database and web app must be run locally
 ### Chrome Extension
 
 - Note-taking functionality directly in the browser
